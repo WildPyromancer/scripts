@@ -1,0 +1,17 @@
+declare -r REGEX="(\d{3,4})x(\d{3,4})"
+ls | egrep "\.jpg|\.png" | while read picture; do
+	if [[ $(identify $picture) =~ $REGEX ]]; then
+		echo -n $match[1] x $match[2]
+		if [ $match[1] = $match[2] ]; then
+			echo "square"
+			convert -size 256x256 $picture $picture
+		else
+			echo "not square"
+			convert -size 256x256! $picture $picture
+		fi
+		convert -type grayscale $picture $picture
+	else
+		echo "[$picture] may be not image FILE."
+	fi
+done
+return 0
