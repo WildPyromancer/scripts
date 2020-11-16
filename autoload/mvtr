@@ -1,0 +1,15 @@
+for file in $@; do
+	if [ -e ${file} ]; then
+		echo "'${file}' to trash. OK? [Yy]"
+		if read -q; then
+			mv --force --backup=t ${file} ~/.local/share/Trash/files/
+			echo "${file} ---> ~/.local/share/Trash/files/"
+		else
+			echo abort
+		fi
+	else
+		echo "${file} does not exist."
+		return 1
+	fi
+done
+return 0
