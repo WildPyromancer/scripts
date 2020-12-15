@@ -1,19 +1,35 @@
 #!/usr/bin/env python
-import math
 import argparse
+import math
+import shutil
+import sys
 import textwrap
+import time
 from pathlib import Path
 from PIL import Image
+from typing import NoReturn
 
-__DEFAULT_SAVE_QUALITY = 100
+CONSOLE_COLUMNS = shutil.get_terminal_size().columns
+CONSOLE_COLUMNS_HALF = int(CONSOLE_COLUMNS / 2)
+__DAFAULT_CROPPING_STEP = 128
 __DAFAULT_OUTPUT_DIRECTORY_PATH = Path('diced')
 __DAFAULT_RADIUS = 256
-__DAFAULT_CROPPING_STEP = 128
-__FLEN = 60
-__HLEN = int(__FLEN / 2)
+__DEFAULT_SAVE_QUALITY = 100
 
 
-def EOF(string):
+def measure_execution_time(func):
+    start = time.time()
+    result = func()
+    elapsed_time = time.time() - start
+    print(f'function {func.__qualname__} elapsed {elapsed_time} sec.')
+    return result
+
+
+def print_center(string: str, fill_char: str = '-') -> NoReturn:
+    print(f'{string:{fill_char}^{CONSOLE_COLUMNS}}')
+
+
+def EOF(string) -> str:
     return textwrap.dedent(string).strip()
 
 
@@ -22,10 +38,10 @@ def diceCrop(
         output_directory_path,
         RADIUS=__DAFAULT_RADIUS,
         CROPPING_STEP=__DAFAULT_CROPPING_STEP,
-        SAVE_QUALITY=__DEFAULT_SAVE_QUALITY):
+        SAVE_QUALITY=__DEFAULT_SAVE_QUALITY) -> bool:
 
-    print(f'{" Start diceCrop() ":=^{__FLEN}}')
-    print(f'{"-"*5}{" Start checking arguments ":^{__FLEN-10}s}{"-"*5}')
+    print_center(f' {sys._getframe().f_code.co_name}() ', '+')
+    print_center(' Checking arguments ', '+')
 
     def printError(string):
         print('[Error] ', string)
@@ -46,19 +62,6 @@ def diceCrop(
     SUFFIX = input_file_path.suffix
     DIGIT = len(str(max(W, H)))
 
-    def fprint(str, var):
-        print(f'{str:<{__HLEN - 2}} : {var:>{__HLEN - 1}}')
-
-    print(f'{"-"*10}{" Variables ":^{__FLEN - 20}s}{"-"*10}')
-    fprint("Input image path", str(input_file_path))
-    fprint("Output directory path", str(output_directory_path))
-    fprint("Cropping radius", RADIUS)
-    fprint("Cropping step", CROPPING_STEP)
-    fprint("Save quality", SAVE_QUALITY)
-    fprint("Image width", W)
-    fprint("Image height", H)
-    print(f'{"-"*10}{"":{__FLEN - 20}s}{"-"*10}')
-
     if \
             math.isnan(RADIUS) or\
             math.isnan(CROPPING_STEP) or\
@@ -72,8 +75,8 @@ def diceCrop(
         output_directory_path.mkdir()
         print(f'Make directory => {output_directory_path}')
 
-    print(f'{"-"*5}{"  End  checking arguments ":^{__FLEN-10}s}{"-"*5}')
-    print(f'{"-"*5}{" Start dice cropping ":^{__FLEN-10}s}{"-"*5}')
+    print_center(' Checking arguments ')
+    print_center(' Dice cropping ', '+')
     for x in range(RADIUS, W, CROPPING_STEP):
         start_x = x - RADIUS
         for y in range(RADIUS, H, CROPPING_STEP):
@@ -90,13 +93,13 @@ def diceCrop(
                 NEW_FILE_NAME,
                 quality=SAVE_QUALITY
             )
-    print(f'{"-"*5}{"  End  dice cropping ":^{__FLEN-10}s}{"-"*5}')
-    print(f'{"  End  diceCrop() ":=^{__FLEN}}')
+    print_center(' Dice cropping ')
+    print_center(f' {sys._getframe().f_code.co_name}() ')
     return True
 
 
-def main():
-    print(f'{" Start main() ":=^{__FLEN}}')
+def main() -> NoReturn:
+    print(f'{" " + sys._getframe().f_code.co_name + " ":+^{CONSOLE_COLUMNS}}')
     PARSER = argparse.ArgumentParser(
         formatter_class=argparse.RawTextHelpFormatter,
         description=EOF('''
@@ -131,8 +134,8 @@ def main():
 
     RESULT = diceCrop(*vars(PARSER.parse_args()).values())
     print(f'End the main process {"successfully" if RESULT else "failed"}.')
-    print(f'{"  End  main() ":=^{__FLEN}}')
+    print(f'{" " + sys._getframe().f_code.co_name + " ":-^{CONSOLE_COLUMNS}}')
 
 
-if __name__ == "__main__":
-    main()
+if __name__ == '__main__':
+    measure_execution_time(main)

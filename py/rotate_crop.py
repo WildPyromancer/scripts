@@ -1,39 +1,63 @@
-#!/usr/bin/env python3
-import math
+#!/usr/bin/env python
 import argparse
+import math
 import re
+import shutil
+import sys
 import textwrap
+import time
 from pathlib import Path
 from PIL import Image, ImageOps
+from typing import NoReturn
 
-
+CONSOLE_COLUMNS = shutil.get_terminal_size().columns
+CONSOLE_COLUMNS_HALF = int(CONSOLE_COLUMNS / 2)
 __DEFAULT_DEGREE_STEP = 2
-__DEFAULT_TIMES = 5
 __DEFAULT_SAVE_QUALITY = 100
-__FLEN = 60
-__HLEN = int(__FLEN / 2)
+__DEFAULT_TIMES = 5
 
 
-def EOF(string):
+def measure_execution_time(func):
+    start = time.time()
+    result = func()
+    elapsed_time = time.time() - start
+    print(f'function {func.__qualname__} elapsed {elapsed_time} sec.')
+    return result
+
+
+def print_center(string: str, fill_char: str = '-') -> NoReturn:
+    print(f'{string:{fill_char}^{CONSOLE_COLUMNS}}')
+
+
+def EOF(string) -> str:
     return textwrap.dedent(string).strip()
 
 
+def hoge(
+    file_path: str
+) -> bool:
+    print_center(f' {sys._getframe().f_code.co_name}() ', '+')
+    print_center(f' {sys._getframe().f_code.co_name}() ')
+    return True
+
+
 def rotateAndCrop(
-        input_file_path,
-        output_directory_path,
-        radius=0,
-        center_x=0,
-        center_y=0,
-        DEGREE_STEP=__DEFAULT_DEGREE_STEP,
-        TIMES=__DEFAULT_TIMES,
-        SAVE_QUALITY=__DEFAULT_SAVE_QUALITY,
-        FILE_NAME_IS_FORMATTED=False):
+    input_file_path,
+    output_directory_path,
+    radius=0,
+    center_x=0,
+    center_y=0,
+    DEGREE_STEP=__DEFAULT_DEGREE_STEP,
+    TIMES=__DEFAULT_TIMES,
+    SAVE_QUALITY=__DEFAULT_SAVE_QUALITY,
+    FILE_NAME_IS_FORMATTED=False
+) -> bool:
 
     def printError(string):
         print('[Error] ', string)
 
-    print(f'{" Start rotateAndCrop() ":=^{__FLEN}}')
-    print(f'{"-"*5}{" Start checking arguments ":^{__FLEN-10}s}{"-"*5}')
+    print_center(f' {sys._getframe().f_code.co_name}() ', '+')
+    print_center(' Checking arguments ', '+')
 
     input_file_path = Path(input_file_path)
     output_directory_path = Path(output_directory_path)
@@ -48,7 +72,6 @@ def rotateAndCrop(
     W, H = IMAGE.width, IMAGE.height
     FILE_NAME = input_file_path.stem
     SUFFIX = input_file_path.suffix
-    DIGIT = len(str(max(W, H)))
 
     if radius == 0:
         if W == H and W % 3 == 0:
@@ -81,24 +104,6 @@ def rotateAndCrop(
     if center_y < 1:
         center_y = int(H/2)
 
-    def fprint(str, var):
-        print(f'{str:<{__HLEN - 2}} : {var:>{__HLEN - 1}}')
-
-    print(f'{"-"*10}{" Variables ":^{__FLEN - 20}s}{"-"*10}')
-    fprint("Input image path", str(input_file_path))
-    fprint("Output directory path", str(output_directory_path))
-    fprint("Cropping radius", radius)
-    fprint("Coordinate of center",
-           f'({center_x:{DIGIT}d},{center_y:{DIGIT}d})')
-    fprint("Degree step of rotation", DEGREE_STEP)
-    fprint("Number of times to rotate", TIMES)
-    fprint("Save quality", SAVE_QUALITY)
-    fprint("Image height", H)
-    fprint("Is the file name formatted ?", FILE_NAME_IS_FORMATTED)
-    fprint("Image width", W)
-    fprint("Image height", H)
-
-    print(f'{"-"*10}{"":{__FLEN - 20}s}{"-"*10}')
     if \
             math.isnan(radius) or\
             math.isnan(center_x) or\
@@ -132,9 +137,9 @@ def rotateAndCrop(
         output_directory_path.mkdir()
         print(f'Make directory => {output_directory_path}')
 
-    print(f'{"-"*5}{"  End  checking arguments ":^{__FLEN-10}s}{"-"*5}')
+    print_center(' Checking arguments ')
+    print_center(' Rotating and cropping ', '+')
 
-    print(f'{"-"*5}{" Start rotating and cropping ":^{__FLEN-10}s}{"-"*5}')
     for i in range(TIMES + 1):
         current_degree = i * DEGREE_STEP
         print(f'{str(current_degree)}˚')
@@ -164,13 +169,13 @@ def rotateAndCrop(
             new_image_path,
             quality=SAVE_QUALITY
         )
-    print(f'{"-"*5}{"  End  rotating and cropping ":^{__FLEN-10}s}{"-"*5}')
-    print(f'{"  End  rotateAndCrop() ":=^{__FLEN}}')
+    print_center(' Rotating and cropping ')
+    print_center(f' {sys._getframe().f_code.co_name}() ')
     return True
 
 
-def main():
-    print(f'{" Start main() ":=^{__FLEN}}')
+def main() -> NoReturn:
+    print_center(f' {sys._getframe().f_code.co_name}() ', '+')
     PARSER = argparse.ArgumentParser(
         formatter_class=argparse.RawTextHelpFormatter,
         description=EOF('''
@@ -236,11 +241,10 @@ def main():
                             example: hoge_512_650_702.jpg
                         ''')
                         )
-
     RESULT = rotateAndCrop(*vars(PARSER.parse_args()).values())
     print(f'End the main process {"successfully" if RESULT else "failed"}.')
-    print(f'{"  End  main() ":=^{__FLEN}}')
+    print_center(f' {sys._getframe().f_code.co_name}() ')
 
 
-if __name__ == "__main__":
-    main()
+if __name__ == '__main__':
+    measure_execution_time(main)

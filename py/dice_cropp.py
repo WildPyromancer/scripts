@@ -1,31 +1,47 @@
-#!/usr/bin/env python3
+#!/usr/bin/env python
 import argparse
-import textwrap
 import shutil
 import sys
-
+import textwrap
+import time
 from pathlib import Path
-__FLEN = 60
-__HLEN = int(__FLEN / 2)
+from typing import NoReturn
+
+CONSOLE_COLUMNS = shutil.get_terminal_size().columns
+CONSOLE_COLUMNS_HALF = int(CONSOLE_COLUMNS / 2)
 
 
-def __EOF(string: str):
+def measure_execution_time(func):
+    start = time.time()
+    result = func()
+    elapsed_time = time.time() - start
+    print(f'function {func.__qualname__} elapsed {elapsed_time} sec.')
+    return result
+
+
+def print_center(string: str, fill_char: str = '-') -> NoReturn:
+    print(f'{string:{fill_char}^{CONSOLE_COLUMNS}}')
+
+
+def EOF(string) -> str:
     return textwrap.dedent(string).strip()
 
 
-def RCWSN(
-        INPUT_DIRECTORY_STR: str = './',
-        OUTPUT_DIRECTORY_STR: str = './renamed',
-        SUFFIX: str = None,
-        DIGIT: int = 3,
-        NAME: str = None,
-        MOVE_MODE: bool = False,
-        DEBUG_MODE: bool = False):
+def rename_with_seq_number(
+    INPUT_DIRECTORY_STR: str = './',
+    OUTPUT_DIRECTORY_STR: str = './renamed',
+    SUFFIX: str = None,
+    DIGIT: int = 3,
+    NAME: str = None,
+    MOVE_MODE: bool = False,
+    DEBUG_MODE: bool = False
+) -> bool:
 
     def printError(string):
         print('[Error] ', string)
 
-    print(f'{" Start " + sys._getframe().f_code.co_name + "() ":=^{__FLEN}}')
+    print_center(f' {sys._getframe().f_code.co_name}() ', '+')
+
     INPUT_DIRECTORY_PATH = Path(INPUT_DIRECTORY_STR)
     OUTPUT_DIRECTORY_PATH = Path(OUTPUT_DIRECTORY_STR)
 
@@ -76,15 +92,15 @@ def RCWSN(
             print('Successeed')
         counter += 1
 
-    print(f'{"  End " + sys._getframe().f_code.co_name + "()  ":=^{__FLEN}}')
+    print_center(f' {sys._getframe().f_code.co_name}() ')
     return True
 
 
-def main():
-    print(f'{" Start " + sys._getframe().f_code.co_name + "() ":=^{__FLEN}}')
+def main() -> NoReturn:
+    print_center(f' {sys._getframe().f_code.co_name}() ', '+')
     PARSER = argparse.ArgumentParser(
         formatter_class=argparse.RawTextHelpFormatter,
-        description=__EOF('''
+        description=EOF('''
             This script copies or moves (optional) all the files in the folder,
             renaming them sequentially, to the folder.
             example:
@@ -94,26 +110,26 @@ def main():
     )
     PARSER.add_argument('--input_directory', '--input', '-i',
                         type=str, default='.',
-                        help=__EOF('''
+                        help=EOF('''
                             [str] The path of the input directory.
                         ''')
                         )
     PARSER.add_argument('--output_directory', '--output', '-o',
                         type=str, default='./renamed',
-                        help=__EOF('''
+                        help=EOF('''
                             [str] The path of the output directory.
                         ''')
                         )
     PARSER.add_argument('--suffix', '-s',
                         type=str,
-                        help=__EOF('''
+                        help=EOF('''
                             [str] The suffix of the file you will copy or move.
                             (default: all)
                         ''')
                         )
     PARSER.add_argument('--digit', '-d',
                         type=int, default=3,
-                        help=__EOF('''
+                        help=EOF('''
                             [int] Digit for 0 fill.
                             001, 002, 003, ...
                             (default: 3)
@@ -121,7 +137,7 @@ def main():
                         )
     PARSER.add_argument('--name', '-n',
                         type=str,
-                        help=__EOF('''
+                        help=EOF('''
                             [str] Initial name.
                             {name}001.{suffix},
                             {name}002.{suffix},
@@ -131,21 +147,22 @@ def main():
                         )
     PARSER.add_argument('--move',  '-m',
                         action='store_true',
-                        help=__EOF('''
+                        help=EOF('''
                             [flag] Instead of copy, move(rename) only.
                         ''')
                         )
     PARSER.add_argument('--whatIdo', '--debug', '-w',
                         action='store_true',
-                        help=__EOF('''
+                        help=EOF('''
                             [flag] The copy or move is not actually performed.
                             This is used when you want to check the result of a renaming operation.
                         ''')
                         )
-    RESULT = RCWSN(*vars(PARSER.parse_args()).values())
+
+    RESULT = rename_with_seq_number(*vars(PARSER.parse_args()).values())
     print(f'End the main process {"successfully" if RESULT else "failed"}.')
-    print(f'{"  End " + sys._getframe().f_code.co_name + "()  ":=^{__FLEN}}')
+    print_center(f' {sys._getframe().f_code.co_name}() ')
 
 
-if __name__ == "__main__":
-    main()
+if __name__ == '__main__':
+    measure_execution_time(main)
