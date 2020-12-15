@@ -97,15 +97,11 @@ def sort_functions(
     sorted_functions: List[Function_string] = sorted(
         functions, key=lambda f: f.name)
 
-    # new_section_of_funciton: List[str] = []
-
     new_lines: List[str] = []
-
     new_lines.extend(lines[0:section_of_function_begins_at])
     for f in sorted_functions:
         new_lines.extend(lines[f.begin_at:f.end_at + 1])
         new_lines.append('\n')
-    # new_lines.extend(new_section_of_funciton)
     new_lines.extend(lines[section_of_function_ends_at + 1:])
 
     new_str: str = ''.join(new_lines)
