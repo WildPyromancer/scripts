@@ -1,30 +1,39 @@
 #!/usr/bin/env python
-import time
-import textwrap
-import re
-import argparse
-from pathlib import Path
-from typing import List
 
-__FLEN = 60
-__HLEN = int(__FLEN / 2)
+import argparse
+import re
+import shutil
+import sys
+import textwrap
+import time
+from pathlib import Path
+from typing import List, NoReturn
+
+CONSOLE_COLUMNS = shutil.get_terminal_size().columns
+CONSOLE_COLUMNS_HALF = int(CONSOLE_COLUMNS / 2)
 
 
 def measure_execution_time(func):
     start = time.time()
-    func()
+    result = func()
     elapsed_time = time.time() - start
-    print(f'{elapsed_time}')
-    pass
+    print(f'function {func.__qualname__} elapsed {elapsed_time} sec.')
+    return result
 
 
-def EOF(string):
+def print_center(string: str, fill_char: str = '-') -> NoReturn:
+    print(f'{string:{fill_char}^{CONSOLE_COLUMNS}}')
+
+
+def EOF(string) -> str:
     return textwrap.dedent(string).strip()
 
 
 def sort_functions(
     file_path: str
-):
+) -> bool:
+    print_center(f' {sys._getframe().f_code.co_name}() ', '+')
+
     file_path: Path = Path(file_path)
     if not file_path.is_file():
         print(f'{file_path} does NOT exist.')
@@ -66,15 +75,16 @@ def sort_functions(
         {func_section_finish_at=}
     '''))
 
+    print_center(f' {sys._getframe().f_code.co_name}() ')
     return True
 
 
-def main():
-    print(f'{" Start main() ":=^{__FLEN}}')
+def main() -> NoReturn:
+    print_center(f' {sys._getframe().f_code.co_name}() ', '+')
     PARSER = argparse.ArgumentParser(
         formatter_class=argparse.RawTextHelpFormatter,
         description=EOF('''
-            aaaa
+            usage
         ''')
     )
     PARSER.add_argument('--file',  '-f',
@@ -83,9 +93,8 @@ def main():
 
     RESULT = sort_functions(*vars(PARSER.parse_args()).values())
     print(f'End the main process {"successfully" if RESULT else "failed"}.')
-    print(f'{"  End  main() ":=^{__FLEN}}')
+    print_center(f' {sys._getframe().f_code.co_name}() ')
 
 
-if __name__ == "__main__":
+if __name__ == '__main__':
     measure_execution_time(main)
-    pass
