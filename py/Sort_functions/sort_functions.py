@@ -14,9 +14,9 @@ CONSOLE_COLUMNS_HALF = int(CONSOLE_COLUMNS / 2)
 
 
 def measure_execution_time(func):
-    start = time.time()
+    begin = time.time()
     result = func()
-    elapsed_time = time.time() - start
+    elapsed_time = time.time() - begin
     print(f'function {func.__qualname__} elapsed {elapsed_time} sec.')
     return result
 
@@ -46,26 +46,29 @@ def sort_functions(
     class Function_string:
         def __init__(
             self,
-            func_name: str,
-            start_at: int
+            name: str,
+            begin_at: int
         ):
-            self.func_name: str = func_name
-            self.lines: int = 1
-            self.start_at: int = start_at
+            self.begin_at: int = begin_at
+            self.end_at: int
+            self.name: str = name
 
-    REGEX_FUNC_START = re.compile(r'[ \t]*[\w_0-9]+\(\) ?{')
-    REGEX_FUNC_NAME = re.compile(r'[ \t]*([\w_0-9]+)\(\) ?{')
-    REGEX_FUNC_END = re.compile(r'[ \t]*}')
+        def get_string(self):
+            ''.join(lines[self.begin_at:self.end_at])
+
+    REGEX_FUNC_START = re.compile(r'^[\w_0-9]+\(\) ?{')
+    REGEX_FUNC_NAME = re.compile(r'^([\w_0-9]+)\(\) ?{')
+    REGEX_FUNC_END = re.compile(r'^}')
     functions: List[Function_string] = []
     current_func: Function_string
-    function_section_start_at: int = 0
-    function_section_finish_at: int = 0
+    section_of_function_begins_at: int = 0
+    section_of_function_ends_at: int = 0
     in_func: bool = False
 
     for line in enumerate(lines):
         if re.match(REGEX_FUNC_START, line[1]) and not in_func:
-            if function_section_start_at == 0:
-                function_section_start_at = line[0]
+            if section_of_function_begins_at == 0:
+                section_of_function_begins_at = line[0]
 
             in_func = True
             current_func = Function_string(
@@ -77,22 +80,29 @@ def sort_functions(
         if not in_func:
             continue
 
-        current_func.lines += 1
-
         if re.match(REGEX_FUNC_END, line[1]):
             in_func = False
-            function_section_finish_at = line[0]
+            section_of_function_ends_at = line[0]
+            current_func.end_at = line[0]
             functions.append(current_func)
 
-    print(EOF(f'''
-        {function_section_start_at=}
-        {function_section_finish_at=}
-    '''))
+    if len(functions) == 0:
+        print(f'{file_path} has NO function .')
+        return False
 
-    # def sort(func: Function_string):
-    #     pass
+    sorted_functions: List[Function_string] = sorted(
+        functions, key=lambda f: f.name)
 
-    sorted_functions = sorted(functions, key=lambda f: f.func_name)
+    # new_section_of_funciton: List[str] = []
+
+    new_lines: List[str] = []
+
+    new_lines.extend(lines[0:section_of_function_begins_at])
+    for f in sorted_functions:
+        new_lines.extend(lines[f.begin_at:f.end_at])
+        new_lines.append('\n')
+    # new_lines.extend(new_section_of_funciton)
+    new_lines.extend(lines[section_of_function_ends_at:])
 
     print_center(f' {sys._getframe().f_code.co_name}() ')
     return True
