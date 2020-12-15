@@ -66,7 +66,10 @@ def sort_functions(
     in_func: bool = False
 
     for line in enumerate(lines):
-        if re.match(REGEX_FUNC_START, line[1]) and not in_func:
+        if re.match(REGEX_FUNC_START, line[1]):
+            if in_func:
+                print(f'Function start is duplicated at {line[0]} .')
+                return False
             if section_of_function_begins_at == 0:
                 section_of_function_begins_at = line[0]
 
@@ -99,11 +102,12 @@ def sort_functions(
 
     new_lines.extend(lines[0:section_of_function_begins_at])
     for f in sorted_functions:
-        new_lines.extend(lines[f.begin_at:f.end_at])
+        new_lines.extend(lines[f.begin_at:f.end_at + 1])
         new_lines.append('\n')
     # new_lines.extend(new_section_of_funciton)
-    new_lines.extend(lines[section_of_function_ends_at:])
+    new_lines.extend(lines[section_of_function_ends_at + 1:])
 
+    print(''.join(new_lines))
     print_center(f' {sys._getframe().f_code.co_name}() ')
     return True
 
