@@ -30,7 +30,8 @@ def EOF(string) -> str:
 
 
 def sort_functions(
-    file_path: str
+    file_path: str,
+    debug_mode: bool = False
 ) -> bool:
     print_center(f' {sys._getframe().f_code.co_name}() ', '+')
 
@@ -107,7 +108,13 @@ def sort_functions(
     # new_lines.extend(new_section_of_funciton)
     new_lines.extend(lines[section_of_function_ends_at + 1:])
 
-    print(''.join(new_lines))
+    new_str: str = ''.join(new_lines)
+    if debug_mode:
+        print(new_str)
+    else:
+        with open(file_path, mode='w') as f:
+            f.write(new_str)
+
     print_center(f' {sys._getframe().f_code.co_name}() ')
     return True
 
@@ -122,7 +129,10 @@ def main() -> NoReturn:
     )
     PARSER.add_argument('--file',  '-f',
                         type=str, required=True,
-                        help='(required)[str] Input file path.')
+                        help='(required)[str] File path.'),
+    PARSER.add_argument('--debug',  '-d',
+                        action='store_true', required=False,
+                        help='(optional)[flag] Print only. Don\'t write. ')
 
     RESULT = sort_functions(*vars(PARSER.parse_args()).values())
     print(f'End the main process {"successfully" if RESULT else "failed"}.')
