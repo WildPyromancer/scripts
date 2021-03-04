@@ -1,4 +1,5 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
+
 import argparse
 import shutil
 import sys
@@ -78,7 +79,7 @@ def rename_with_seq_number(
         print(f'{SUFFIX=}')
         print(*CHILDLEN)
 
-    counter = 0
+    counter = 1
     for FILE_PATH in CHILDLEN:
         NEW_FILE_PATH = OUTPUT_DIRECTORY_PATH.joinpath(
             f'{NAME or ""}{counter:0{DIGIT}d}{FILE_PATH.suffix}'
